@@ -1,0 +1,78 @@
+@startuml
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+'================ CONTROLLER =================
+class BookingController <<Controller>> {
+  -bookingService: IBookingService
+  +makeReservation(guestId, roomIds, checkIn, checkOut)
+  +cancelReservation(bookingId)
+}
+'================ SERVICE ====================
+interface IBookingService {
+  +checkAvailability(roomIds, checkIn, checkOut)
+  +calculateTotal(booking)
+  +applyDiscount(total)
+}
+class BookingService <<Service>> {
+  -repository: IBookingRepository
+  +checkAvailability(roomIds, checkIn, checkOut)
+  +calculateTotal(booking)
+  +applyDiscount(total)
+}
+IBookingService <|.. BookingService
+BookingController --> IBookingService : uses
+
+'================ REPOSITORY =================
+interface IBookingRepository {
+  +save(booking)
+  +findById(id)
+  +delete(id)
+}
+BookingService ..> IBookingRepository : uses
+'================ ENTITIES ===================
+class Guest {
+  +id
+  +name
+  +email
+}
+class Booking {
+  +id
+  +checkInDate
+  +checkOutDate
+}
+class Hotel {
+  +id
+  +name
+  +status
+}
+class Room {
+  +id
+  +number
+  +price
+}
+class RoomType {
+  +id
+  +typeName
+  +capacity
+}
+class Invoice {
+  +id
+  +amount
+  +issuedDate
+}
+class Payment {
+  +id
+  +amount
+  +paymentDate
+}
+'================ RELATIONSHIPS ==============
+Guest "1" --> "0..*" Booking
+Booking --> "1..*" Room
+Hotel *-- "1..*" Room
+Room --> "1" RoomType
+Booking o-- "1..*" Invoice
+Booking *-- "1..*" Payment
+BookingService ..> Booking : calculates
+BookingService ..> Room : reads
+BookingService ..> RoomType : reads
+@enduml
